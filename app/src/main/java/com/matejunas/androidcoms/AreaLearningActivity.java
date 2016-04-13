@@ -8,14 +8,14 @@ import android.widget.Toast;
 import com.google.atap.tangoservice.TangoConfig;
 import com.google.atap.tangoservice.TangoErrorException;
 
-public class LoadADFActivity extends AppCompatActivity {
+public class AreaLearningActivity extends AppCompatActivity {
 
     private static final String uuid = "test uuid";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_load_adf);
+        setContentView(R.layout.activity_area_learning);
         loadAdf();
         Intent mainIntent = new Intent(this, MainActivity.class);
         startActivity(mainIntent);
@@ -30,8 +30,5 @@ public class LoadADFActivity extends AppCompatActivity {
             e.printStackTrace();
             Toast.makeText(this, "Couldn't put uuid", Toast.LENGTH_LONG).show();
         }
-
-        // Add tango listener
-
     }
 }
