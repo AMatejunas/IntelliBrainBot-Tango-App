@@ -1,0 +1,9 @@
+<resources>
+    <string name="app_name">Android Coms</string>
+    <string name="button_forward">Forward</string>
+    <string name="button_left">Left</string>
+    <string name="button_right">Right</string>
+    <string name="button_backward">Backward</string>
+    <string name="load_adf">Loading ADF...</string>
+    <string name="button_stop">Stop</string>
+</resources>
