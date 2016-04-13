@@ -34,20 +34,17 @@ public class MainActivity extends AppCompatActivity {
     public static Tango mTango;
     public static boolean adfLoaded = false;
 
-    private static final String uuid = "example_string";
-
+    private static boolean isOpen = false;
+    private static double[] mTarget = {3.0, 0.0, 3.0};
     private static UsbManager mUsbManager;
     private static UsbDevice device;
     private static UsbSerialDriver mDriver;
     private static UsbDeviceConnection mConnection;
     private static UsbSerialPort mPort;
 
-    private static double[] mTarget = {3.0, 0.0, 3.0};
-
-    private static boolean isOpen = false;
-
     private static final String ACTION_USB_PERMISSION =
             "com.matejunas.androidcoms.USB_PERMISSION";
+
     private static final BroadcastReceiver mUsbReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
@@ -215,7 +212,40 @@ public class MainActivity extends AppCompatActivity {
         startActivity(startADFIntent);
     }
 
-    public static void goToTarget(double[] location, double[] forward) {
+    // Opens a connection between the tango and the IntelliBrainBot
+    private void openConnection() {
+        mUsbManager = (UsbManager) getSystemService(Context.USB_SERVICE);
+        List<UsbSerialDriver> availableDrivers = UsbSerialProber.getDefaultProber().findAllDrivers(mUsbManager);
+        if (availableDrivers.isEmpty()) {
+            Log.e("IBC", "No drivers found, aborting");
+            Toast.makeText(this, "No drivers found, aborting", Toast.LENGTH_LONG).show();
+            return;
+        }
+
+        // Open a connection to the first available driver
+        mDriver = availableDrivers.get(0);
+        device = mDriver.getDevice();
+        PendingIntent mPermissionIntent = PendingIntent.getBroadcast(this, 0, new Intent(ACTION_USB_PERMISSION), 0);
+        IntentFilter filter = new IntentFilter(ACTION_USB_PERMISSION);
+        registerReceiver(mUsbReceiver, filter);
+        mUsbManager.requestPermission(device, mPermissionIntent);
+
+    }
+
+    // Sends the byte array to the IntelliBrainBot through the open connection
+    private void sendData(byte[] toSend) throws IOException {
+        if (mPort == null) {
+            Toast.makeText(this, "Port is null", Toast.LENGTH_LONG).show();
+        }
+        try {
+            mPort.write(toSend, 1000);
+            Toast.makeText(this, "Send " + (char)toSend[0], Toast.LENGTH_LONG).show();
+        } catch (IOException e) {
+            Toast.makeText(this, "Failed to write", Toast.LENGTH_LONG).show();
+        }
+    }
+
+    private static void goToTarget(double[] location, double[] forward) {
         // Get distance to target
         double[] toTarget = new double[location.length];
         for (int i = 0; i < location.length; i++) {
@@ -239,30 +269,6 @@ public class MainActivity extends AppCompatActivity {
         // convert angle to -pi to pi
 
         ang -= angleToTarget;
-
-    }
-
-    public void openConnection() {
-        // Find all available drivers from attached devices
-//        if ( == null) {
-//            Log.e("IBC", "Context is null, aborting");
-//            return;
-//        }
-        mUsbManager = (UsbManager) getSystemService(Context.USB_SERVICE);
-        List<UsbSerialDriver> availableDrivers = UsbSerialProber.getDefaultProber().findAllDrivers(mUsbManager);
-        if (availableDrivers.isEmpty()) {
-            Log.e("IBC", "No drivers found, aborting");
-            Toast.makeText(this, "No drivers found, aborting", Toast.LENGTH_LONG).show();
-            return;
-        }
-
-        // Open a connection to the first available driver
-        mDriver = availableDrivers.get(0);
-        device = mDriver.getDevice();
-        PendingIntent mPermissionIntent = PendingIntent.getBroadcast(this, 0, new Intent(ACTION_USB_PERMISSION), 0);
-        IntentFilter filter = new IntentFilter(ACTION_USB_PERMISSION);
-        registerReceiver(mUsbReceiver, filter);
-        mUsbManager.requestPermission(device, mPermissionIntent);
 
     }
 }
