@@ -125,8 +125,8 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
-        mTango = new Tango(this);
+        startActivityForResult(
+                Tango.getRequestPermissionIntent(Tango.PERMISSIONTYPE_ADF_LOAD_SAVE), 0);
     }
 
     @Override
@@ -206,7 +206,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void startLoadADFActivity() {
-        Intent startADFIntent = new Intent(this, LoadADFActivity.class);
+        Intent startADFIntent = new Intent(this, AreaLearningActivity.class);
         startActivity(startADFIntent);
     }
 

@@ -32,7 +32,7 @@
                 android:resource="@xml/device_filter" />
         </activity>
         <activity
-            android:name=".LoadADFActivity"
+            android:name=".AreaLearningActivity"
             android:label="@string/title_activity_load_adf"
             android:theme="@style/NoTitle.NoActionBar"></activity>
     </application>
