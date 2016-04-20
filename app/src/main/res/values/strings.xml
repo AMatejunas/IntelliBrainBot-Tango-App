@@ -4,8 +4,11 @@
     <string name="button_left">Left</string>
     <string name="button_right">Right</string>
     <string name="button_backward">Backward</string>
-    <string name="load_adf">Loading ADF...</string>
     <string name="button_stop">Stop</string>
+    <string name="button_load_adf">Load ADF</string>
+    <string name="button_go_to_target">Go To Target</string>
+    <string name="button_record_target">Record Target</string>
+    <string name="load_adf">Loading ADF...</string>
     <string name="action_settings">Settings</string>
     <string name="title_activity_load_adf">Area Learning Activity</string>
 </resources>
