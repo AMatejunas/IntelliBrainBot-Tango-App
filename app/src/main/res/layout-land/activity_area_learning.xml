@@ -36,11 +36,12 @@
             android:onClick="onClick"/>
 
         <Button
-            android:id="@+id/button_forward"
+            android:id="@+id/button_abort"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/button_forward"
+            android:text="@string/button_abort"
             android:onClick="onClick"/>
+
     </LinearLayout>
     <LinearLayout
         android:layout_width="match_parent"
@@ -66,6 +67,12 @@
             android:text="No angle data" />
         <TextView
             android:id="@+id/angle_tango"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textSize="16dp"
+            android:text="No angle data" />
+        <TextView
+            android:id="@+id/angle_to_rotate"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:textSize="16dp"

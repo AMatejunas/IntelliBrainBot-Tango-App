@@ -70,6 +70,7 @@ public class IntelliBrainCommunicator {
     public void sendData(byte[] toSend) {
         if (mPort == null) {
             Toast.makeText(mContext, "Port is null", Toast.LENGTH_LONG).show();
+            return;
         }
         try {
             mPort.write(toSend, 1000);
