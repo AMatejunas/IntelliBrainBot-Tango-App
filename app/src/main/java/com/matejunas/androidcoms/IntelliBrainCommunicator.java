@@ -4,6 +4,7 @@ import android.content.Context;
 import android.hardware.usb.UsbDevice;
 import android.hardware.usb.UsbDeviceConnection;
 import android.hardware.usb.UsbManager;
+import android.os.Looper;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -68,16 +69,22 @@ public class IntelliBrainCommunicator {
 
     // Sends the byte array to the IntelliBrainBot through the open connection
     public void sendData(byte[] toSend) {
-        if (mPort == null) {
-            Toast.makeText(mContext, "Port is null", Toast.LENGTH_LONG).show();
-            return;
-        }
-        try {
-            mPort.write(toSend, 1000);
-            Toast.makeText(mContext, "Send " + (char)toSend[0], Toast.LENGTH_LONG).show();
-        } catch (IOException e) {
-            Toast.makeText(mContext, "Failed to write", Toast.LENGTH_LONG).show();
-        }
+        final byte[] toSendFinal = toSend;
+        (new Runnable() {
+            public void run() {
+                Looper.prepare();
+                if (mPort == null) {
+                    Toast.makeText(mContext, "Port is null", Toast.LENGTH_LONG).show();
+                    return;
+                }
+                try {
+                    mPort.write(toSendFinal, 1000);
+                    Toast.makeText(mContext, "Send " + (char)toSendFinal[0], Toast.LENGTH_LONG).show();
+                } catch (IOException e) {
+                    Toast.makeText(mContext, "Failed to write", Toast.LENGTH_LONG).show();
+                }
+            }
+        }).run();
     }
 
     public void close() {

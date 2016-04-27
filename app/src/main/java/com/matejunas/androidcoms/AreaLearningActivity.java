@@ -23,12 +23,12 @@ import java.util.Arrays;
 public class AreaLearningActivity extends AppCompatActivity {
 
     private static final String TAG = AreaLearningActivity.class.getSimpleName();
-    private static final String uuid = "13bbad56-df34-46c8-81db-b8ae8539e5d1";
+    private static final String uuid = "13f0226b-5cbb-4693-99ee-619a07959231";
+    //private static final String uuid = "455426f3-a468-435d-bc49-1a39f4fa01c9";
     private static double[] mTarget;
     private static double[] mPosition;
-    private static double[] mRotation;
     private static char currentCommand;
-    private boolean engaged = false;
+    private boolean enableRotate = false;
     private static IntelliBrainCommunicator robot;
     private Tango.OnTangoUpdateListener mUpdateListener = new Tango.OnTangoUpdateListener() {
         @Override
@@ -46,8 +46,10 @@ public class AreaLearningActivity extends AppCompatActivity {
                                 "\tz: " + (((int) (poseData.translation[1] * 10)) / 10.0));
                     }
                 });
-                mPosition = Arrays.copyOf(poseData.translation, 3);
-                mRotation = Arrays.copyOf(poseData.rotation, 4);
+                if (enableRotate) {
+                    rotateToTarget(pose.translation, pose.rotation);
+                }
+                mPosition = Arrays.copyOf(pose.translation, 3);
             } else if (pose.baseFrame == TangoPoseData.COORDINATE_FRAME_AREA_DESCRIPTION
                     && pose.targetFrame == TangoPoseData.COORDINATE_FRAME_START_OF_SERVICE) {
                 // Process new localization
@@ -94,14 +96,14 @@ public class AreaLearningActivity extends AppCompatActivity {
                 Toast.makeText(this, "Target set to x: " + mTarget[0] + "\tz: " + mTarget[1], Toast.LENGTH_SHORT).show();
                 break;
             case R.id.button_go_to_target:
-                Toast.makeText(this, R.string.button_go_to_target + " pressed", Toast.LENGTH_SHORT).show();
-                engaged = false;
-                rotateToTarget();
+                Log.i(TAG, getResources().getText(R.string.button_go_to_target) + " pressed");
+                //Toast.makeText(this, getResources().getText(R.string.button_go_to_target) + " pressed", Toast.LENGTH_SHORT).show();
+                enableRotate = true;
                 break;
             case R.id.button_abort:
-                robot.sendData(new byte[] {'s'});
-                engaged = true;
-                currentCommand = 0;
+                robot.sendData(new byte[]{'s'});
+                enableRotate = false;
+                currentCommand = 's';
                 break;
         }
     }
@@ -136,54 +138,55 @@ public class AreaLearningActivity extends AppCompatActivity {
         }
     }
 
-    private void rotateToTarget() {
-        while (!engaged) {
-            // Record current position and translation so nothing is overwritten
-            double[] location = Arrays.copyOf(mPosition, 3);
-            double[] rotation = Arrays.copyOf(mRotation, 4);
+    private void rotateToTarget(double[] location, double[] rotation) {
 
-            // Get distance to target
-            double[] toTarget = new double[location.length];
-            for (int i = 0; i < location.length; i++) {
-                toTarget[i] = location[i] - mTarget[i];
-            }
-
-            // Get x-y angle to target
-            double angleToTarget = Math.atan(toTarget[1] / toTarget[0]);
-            if (toTarget[0] < 0 && angleToTarget < 0.0) {
-                angleToTarget -= Math.PI / 2.0;
-            } else if (toTarget[0] < 0 && angleToTarget < 0.0) {
-                angleToTarget += Math.PI / 2.0;
-            }
-
-            final double printAngle = angleToTarget;
-
-            // Get angle off of target
-            final double angle = Math.atan2(2 * (rotation[3] * rotation[2] + rotation[1] * rotation[0]), 2 * (rotation[1] * rotation[1] + rotation[0] * rotation[0]));
-            final double trueAngle = angle + angleToTarget;
-
-            runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    ((TextView) findViewById(R.id.angle_to_target_text)).setText("To Target: " + (printAngle * 180.0 / Math.PI));
-                    ((TextView) findViewById(R.id.angle_tango)).setText("Tango rotation: " + (angle * 180.0 / Math.PI));
-                    ((TextView) findViewById(R.id.angle_to_rotate)).setText("To Target: " + (trueAngle * 180.0 / Math.PI));
-                }
-            });
-
-            if (Math.abs(trueAngle) > 0.15) {
-                if (trueAngle < 0.0 && currentCommand != 'l') {
-                    robot.sendData(new byte[]{'l'});
-                    currentCommand = 'l';
-                } else if (trueAngle > 0.0 && currentCommand != 'r') {
-                    robot.sendData(new byte[]{'r'});
-                    currentCommand = 'r';
-                }
-            } else {
-                robot.sendData(new byte[]{'s'});
-                currentCommand = 's';
-                engaged = true;
-            }
+        // Get distance to target
+        Log.i(TAG, "Calculating angle to target");
+        double[] toTarget = new double[location.length];
+        for (int i = 0; i < location.length; i++) {
+            toTarget[i] = mTarget[i] - location[i];
         }
+
+        // Get x-y angle to target
+        Log.i(TAG, "Calculating rotation to engage target");
+        double angleToTarget = Math.atan2(toTarget[0], toTarget[1]);
+        final double toTargetDeg2SigFig = ((int) (angleToTarget * 1800.0 / Math.PI)) / 10.0;
+        Log.i(TAG, "Angle to target is " + toTargetDeg2SigFig);
+        // Get angle off of target
+        //final double angle = Math.atan2(2 * (rotation[3] * rotation[2] + rotation[1] * rotation[0]), 2 * (rotation[1] * rotation[1] + rotation[0] * rotation[0]));
+        double tangoAngle = 2 * Math.atan2(rotation[0], rotation[1]);
+        double toRotate = angleToTarget - tangoAngle;
+        toRotate = toRotate < (-1 * Math.PI) ? toRotate + Math.PI : toRotate;
+        toRotate = toRotate > (Math.PI) ? toRotate - Math.PI : toRotate;
+        final double tangoAngleDeg2SigFig = ((int) (tangoAngle * 1800.0 / Math.PI)) / 10.0;
+        final double toRotateDeg2SigFig = ((int) (toRotate * 1800.0 / Math.PI)) / 10.0;
+        Log.i(TAG, "Tango Angle is " + tangoAngleDeg2SigFig);
+        Log.i(TAG, "Angle to rotate is " + toRotateDeg2SigFig);
+        //Toast.makeText(this, "Calling runOnUIThread", Toast.LENGTH_SHORT).show();
+
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                ((TextView) findViewById(R.id.angle_to_target_text)).setText("To Target: " + toTargetDeg2SigFig);
+                ((TextView) findViewById(R.id.angle_tango)).setText("Tango rotation: " + tangoAngleDeg2SigFig);
+                ((TextView) findViewById(R.id.angle_to_rotate)).setText("To Rotate: " + toRotateDeg2SigFig);
+            }
+        });
+
+
+        if (Math.abs(toRotate) > 0.20) {
+            if (toRotate < 0.0 && currentCommand != 'l') {
+                //robot.sendData(new byte[]{'l'});
+                currentCommand = 'l';
+            } else if (toRotate > 0.0 && currentCommand != 'r') {
+                //robot.sendData(new byte[]{'r'});
+                currentCommand = 'r';
+            }
+        } else {
+            //robot.sendData(new byte[]{'s'});
+            currentCommand = 's';
+            enableRotate = true;
+        }
+
     }
 }
