@@ -30,7 +30,7 @@ public class IntelliBrainCommunicator {
 
     public IntelliBrainCommunicator(Context context) {
         mContext = context;
-        openConnection();
+        //openConnection();
     }
 
     // Opens a connection between the tango and the IntelliBrainBot

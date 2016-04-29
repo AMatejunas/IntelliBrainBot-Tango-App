@@ -23,7 +23,8 @@ import java.util.Arrays;
 public class AreaLearningActivity extends AppCompatActivity {
 
     private static final String TAG = AreaLearningActivity.class.getSimpleName();
-    private static final String uuid = "13f0226b-5cbb-4693-99ee-619a07959231";
+    private static final String uuid = "14416671-6e5d-40a6-bf1b-f3c4277f6a8c";
+    //private static final String uuid = "13f0226b-5cbb-4693-99ee-619a07959231";
     //private static final String uuid = "455426f3-a468-435d-bc49-1a39f4fa01c9";
     private static double[] mTarget;
     private static double[] mPosition;
@@ -155,7 +156,7 @@ public class AreaLearningActivity extends AppCompatActivity {
         // Get angle off of target
         //final double angle = Math.atan2(2 * (rotation[3] * rotation[2] + rotation[1] * rotation[0]), 2 * (rotation[1] * rotation[1] + rotation[0] * rotation[0]));
         double tangoAngle = 2 * Math.atan2(rotation[0], rotation[1]);
-        double toRotate = angleToTarget - tangoAngle;
+        double toRotate = tangoAngle - ((Math.PI/2) - angleToTarget);
         toRotate = toRotate < (-1 * Math.PI) ? toRotate + Math.PI : toRotate;
         toRotate = toRotate > (Math.PI) ? toRotate - Math.PI : toRotate;
         final double tangoAngleDeg2SigFig = ((int) (tangoAngle * 1800.0 / Math.PI)) / 10.0;
