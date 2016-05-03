@@ -1,6 +1,7 @@
 package com.matejunas.androidcoms;
 
 import android.os.Bundle;
+import android.speech.tts.TextToSpeech;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
@@ -19,6 +20,7 @@ import com.google.atap.tangoservice.TangoXyzIjData;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Locale;
 
 public class AreaLearningActivity extends AppCompatActivity {
 
@@ -44,6 +46,8 @@ public class AreaLearningActivity extends AppCompatActivity {
 //    private boolean engagedTarget = false;
     private int mode = MODE_WAIT_FOR_START;
     private static IntelliBrainCommunicator robot;
+    private static boolean saidEngage = false;
+    private static TextToSpeech hal;
     //private SerialThread mSerialThread = new SerialThread();
     private Tango.OnTangoUpdateListener mUpdateListener = new Tango.OnTangoUpdateListener() {
         @Override
@@ -100,6 +104,12 @@ public class AreaLearningActivity extends AppCompatActivity {
         loadAdf();
         Toast.makeText(this, "ADF Loaded", Toast.LENGTH_SHORT).show();
         robot = new IntelliBrainCommunicator(this);
+        hal = new TextToSpeech(this, new TextToSpeech.OnInitListener() {
+            @Override
+            public void onInit(int status) {
+                hal.setLanguage(Locale.UK);
+            }
+        });
         //mSerialThread.getHandler().setRobot(new IntelliBrainCommunicator(this));
         //mSerialThread.getHandler().mContext = this;
     }
@@ -113,6 +123,7 @@ public class AreaLearningActivity extends AppCompatActivity {
     public void onClick(View v) {
         switch (v.getId()) {
             case R.id.button_record_target:
+                hal.speak("Target Recorded", TextToSpeech.QUEUE_FLUSH, null);
                 mTarget = Arrays.copyOf(mPosition, 3);
                 Toast.makeText(this, "Target set to x: " + mTarget[0] + "\tz: " + mTarget[1], Toast.LENGTH_SHORT).show();
                 break;
@@ -188,10 +199,15 @@ public class AreaLearningActivity extends AppCompatActivity {
                 currentCommand = 'r';
             }
         } else if (dist >= TOLERANCE_FINAL_POSITION) {
+            if (!saidEngage) {
+                hal.speak("Engaging Target", TextToSpeech.QUEUE_FLUSH, null);
+            }
+            saidEngage = true;
             sendMessage('f');
             currentCommand = 'f';
         } else {
             //robot.sendData(new byte[]{'s'});
+            hal.speak("Now what?", TextToSpeech.QUEUE_FLUSH, null);
             sendMessage('s');
             currentCommand = 's';
             mode = MODE_DONE;
