@@ -139,6 +139,17 @@ public class AreaLearningActivity extends AppCompatActivity {
         }
     }
 
+    /*
+        Try this:
+        (All calculations in degrees)
+        double supplementaryToTarget = 180 - toTarget;
+        toRotate = tangoAngle + (-(supplementaryToTarget));
+
+        This assumes that tangoAngle is already correctly positive or negative to turn toward zero.
+        Then the supplementary angle turns to the target. This also assumes the coordinate systems are the same.
+    */
+
+
     private void rotateToTarget(double[] location, double[] rotation) {
 
         // Get distance to target
